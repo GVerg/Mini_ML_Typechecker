@@ -1,6 +1,0 @@
-version: "Swift version 4.0 (swift-4.0-RELEASE)"
-options: "1102b2d9e7958a8fb0559c13615aa114"
-build_time: [1509275015, 414490217]
-inputs:
-  "/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/main.swift": !dirty [1509275009, 0]
-  "/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/Types.swift": [1509274159, 0]
