@@ -17,28 +17,19 @@ let s3 : ml_expr = .Const(s2);
 func f(a:ml_const) -> Bool {
   switch a {
   case .Bool(let x) :
-    return !x
+    return x
   case _ :
     return false
   }
 }
 
 func f(a:ml_expr) -> Bool {
-  switch a {
-  case .Const(let x) :
-    // problem here : access to the value
-  let y = x.Bool(let z);
-    return z;
-  case _ :
-    return false
-  }
+    switch a {
+    case .Const(let x) :
+      return f(a:x);
+    case _ :
+      return false;
+    }
 }
 
-
-let result = f(a:s3);
-
-if(result) {
-  print(result);
-} else {
-  print("There is a problem\n");
-}
+print(f(a:s3));

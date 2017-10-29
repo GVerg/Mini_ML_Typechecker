@@ -3,8 +3,8 @@ case Cons(T, List);
 case Nil;
 }
 
-func map<T>(function : @escaping (T) -> T, list : Liste<T>) -> Liste<T> {
-  func aux(tmp : Liste<T>) -> Liste<T> {
+func map<T>(function : @escaping (T) -> T, list : List<T>) -> List<T> {
+  func aux(tmp : List<T>) -> List<T> {
     switch tmp {
     case let .Cons(head, tail) :
       return List.Cons(function(head), aux(tmp : tail));
@@ -27,7 +27,7 @@ func mem<T:Comparable>(element : T, list : List<T>) -> Bool {
   return aux(tmp : list)
 }
 
-func substract(list1 : List<T>, list2 : List<T>) -> List<T> {
+func substract<T:Comparable>(list1 : List<T>, list2 : List<T>) -> List<T> {
   func aux(tmp : List<T>) -> List<T> {
     switch tmp {
     case .Nil :
@@ -46,9 +46,9 @@ func substract(list1 : List<T>, list2 : List<T>) -> List<T> {
 
 indirect enum Exception : Error {
 case Error(Exception, Int, Int);
-case Unterminated_string;;
-case Unterminated_comment;;
-case Unterminated_stringt;;
-case Bad_char_constant;;
-case Illegal_character;;
+case Unterminated_string;
+case Unterminated_comment;
+case Unterminated_stringt;
+case Bad_char_constant;
+case Illegal_character;
 }
