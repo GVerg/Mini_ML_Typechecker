@@ -1,0 +1,43 @@
+client:
+  name: swift-build
+tools: {}
+targets:
+  "main": ["<Lambda_Swift.module>","<Lambda_Swift.exe>"]
+  "test": ["<Lambda_Swift.module>","<Lambda_Swift.exe>"]
+  "Lambda_Swift.module": ["<Lambda_Swift.module>"]
+  "Lambda_Swift.exe": ["<Lambda_Swift.exe>"]
+default: "main"
+commands: 
+  "<C.Lambda_Swift.exe>":
+    tool: phony
+    inputs: ["/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift"]
+    outputs: ["<Lambda_Swift.exe>"]
+
+  "<C.Lambda_Swift.module>":
+    tool: phony
+    inputs: ["/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.swiftmodule"]
+    outputs: ["<Lambda_Swift.module>"]
+
+  "C.Lambda_Swift.exe":
+    tool: shell
+    description: "Linking ./.build/x86_64-unknown-linux/debug/Lambda_Swift"
+    inputs: ["/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.build/main.swift.o","/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.build/Types.swift.o"]
+    outputs: ["/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift"]
+    args: ["/home/mrgrandefrite/Documents/Tools/Swift/usr/bin/swiftc","-target","x86_64-unknown-linux","-sdk","/","-g","-L","/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug","-o","/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift","-module-name","Lambda_Swift","-emit-executable","-Xlinker","-rpath=$ORIGIN","/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.build/main.swift.o","/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.build/Types.swift.o"]
+
+  "C.Lambda_Swift.module":
+    tool: swift-compiler
+    executable: "/home/mrgrandefrite/Documents/Tools/Swift/usr/bin/swiftc"
+    module-name: "Lambda_Swift"
+    module-output-path: "/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.swiftmodule"
+    inputs: ["/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/main.swift","/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/Types.swift"]
+    outputs: ["/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.build/main.swift.o","/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.build/Types.swift.o","/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.swiftmodule"]
+    import-paths: ["/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug"]
+    temps-path: "/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.build"
+    objects: ["/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.build/main.swift.o","/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.build/Types.swift.o"]
+    other-args: ["-swift-version","3","-target","x86_64-unknown-linux","-sdk","/","-Onone","-g","-enable-testing","-j8","-DSWIFT_PACKAGE","-module-cache-path","/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/ModuleCache"]
+    sources: ["/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/main.swift","/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/Types.swift"]
+    is-library: false
+    enable-whole-module-optimization: false
+    num-threads: "8"
+

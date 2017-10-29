@@ -1,0 +1,17 @@
+{
+  "": {
+    "swift-dependencies": "/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.build/master.swiftdeps"
+  },
+  "/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/main.swift": {
+    "dependencies": "/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.build/main.d",
+    "object": "/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.build/main.swift.o",
+    "swiftmodule": "/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.build/main~partial.swiftmodule",
+    "swift-dependencies": "/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.build/main.swiftdeps"
+  },
+  "/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/Types.swift": {
+    "dependencies": "/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.build/Types.d",
+    "object": "/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.build/Types.swift.o",
+    "swiftmodule": "/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.build/Types~partial.swiftmodule",
+    "swift-dependencies": "/home/mrgrandefrite/Documents/UPMC/M2S1/TAS/Lambda_Swift/.build/x86_64-unknown-linux/debug/Lambda_Swift.build/Types.swiftdeps"
+  }
+}
