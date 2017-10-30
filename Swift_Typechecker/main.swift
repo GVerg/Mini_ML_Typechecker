@@ -1,3 +1,17 @@
+let list1 = List.Cons(1, List.Cons(2, List.Cons(3, List.Cons(4, List.Nil))));
+let list2 = List.Cons(1, List.Cons(2, List.Cons(3, List.Nil)));
+let listR = substract(list1 : list1, list2 : list2);
+try print(hd(list : listR));
+try print(hd(list : tl(list : tl(list : list1))));
+
+func add(integer : Int) -> Int {
+  return integer + 1;
+}
+
+try print(hd(list : map(function : add, list : list1)));
+
+/**** Other exemples ****
+
 let s : vartype = .Unknown(2);
 
 func f(a:vartype) -> Int {
@@ -33,3 +47,4 @@ func f(a:ml_expr) -> Bool {
 }
 
 print(f(a:s3));
+*/
