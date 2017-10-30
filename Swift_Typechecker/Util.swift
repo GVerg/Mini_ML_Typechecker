@@ -3,6 +3,19 @@ case Cons(T, List);
 case Nil;
 }
 
+func length<T>(list : List<T>) -> Int {
+  switch list {
+  case let .Cons(_, tail) :
+    return 1 + length(list : tail);
+  case .Nil :
+    return 0;
+  }
+}
+
+func cons<T>(element : T, list : List<T>) -> List<T> {
+  return .Cons(element, list);
+}
+
 func hd<T>(list : List<T>) throws -> T {
   switch list {
   case let .Cons(head, _) :
@@ -45,13 +58,13 @@ func mem<T:Comparable>(element : T, list : List<T>) -> Bool {
   return aux(tmp : list)
 }
 
-func substract<T:Comparable>(list1 : List<T>, list2 : List<T>) -> List<T> {
+func substract<T:Comparable>(list_1 : List<T>, list_2 : List<T>) -> List<T> {
   func aux(tmp : List<T>) -> List<T> {
     switch tmp {
     case .Nil :
       return .Nil;
     case let .Cons(head, tail) :
-      if(mem(element : head, list : list2)) {
+      if(mem(element : head, list : list_2)) {
         return aux(tmp : tail);
       }
       else {
@@ -59,7 +72,7 @@ func substract<T:Comparable>(list1 : List<T>, list2 : List<T>) -> List<T> {
       }
     }
   }
-  return aux(tmp : list1);
+  return aux(tmp : list_1);
 }
 
 func fold_right<T1,T2>(fonction : @escaping (T1,T2) -> T2, list : List<T1>, element : T2) -> T2 {
@@ -86,6 +99,68 @@ func fold_left<T1,T2>(fonction : @escaping (T1,T2) -> T1, element : T1, list : L
   return aux(tmp : list, acc : element);
 }
 
+func iter<T>(function : @escaping (T) -> (), list : List<T>) {
+  func aux(tmp : List<T>) {
+    switch tmp {
+    case let .Cons(head, tail) :
+        function(head);
+        aux(tmp : tail)
+      case .Nil :
+        break
+    }
+  }
+  aux(tmp : list);
+}
+
+func assoc<T1:Comparable,T2>(element : T1, list : List<(T1,T2)>) throws -> T2 {
+  func aux(tmp : List<(T1,T2)>) throws -> T2 {
+    switch tmp {
+    case let .Cons((key, value), tail) :
+    if (key == element) {
+      return value;
+    } else {
+    return try aux(tmp : tail)
+    }
+    case .Nil :
+      throw(ListError.Not_Found(functionError : "assoc"))
+    }
+  }
+  return try aux(tmp : list);
+}
+
+func combine<T1,T2>(list_1 : List<T1>, list_2 : List<T2>) throws -> List<(T1,T2)> {
+  func aux(tmp1 : List<T1>, tmp2 : List<T2>) -> List<(T1,T2)> {
+    switch tmp1 {
+    case let .Cons(head_1, tail_1) :
+        switch tmp2 {
+        case let .Cons(head_2, tail_2) :
+            return cons(element : (head_1, head_2), list : aux(tmp1 : tail_1, tmp2 : tail_2));
+        case .Nil :
+            return List.Nil;
+        }
+      case .Nil :
+        return List.Nil;
+    }
+  }
+  if length(list : list_1) == length(list : list_2) {
+    return aux(tmp1 : list_1, tmp2 : list_2);
+  } else {
+    throw(ListError.Invalid_Argument(functionError : "combine"));
+  }
+}
+
+func rev<T>(list : List<T>) -> List<T> {
+  func aux(tmp : List<T>, acc : List<T>) -> List<T> {
+    switch tmp {
+    case let .Cons(head, tail) :
+      return aux(tmp : tail, acc :cons(element : head,list : acc));
+    case .Nil :
+      return acc;
+    }
+  }
+  return aux(tmp : list, acc : List.Nil);
+}
+
 /**** TODO : to translate ****
 (* une fonction de nettoyage de fichiers *)
 let remove_file f =
@@ -96,11 +171,11 @@ let remove_file f =
 ;;
 */
 
+func do_list<T>(function : @escaping (T) -> (), list : List<T>) {
+  iter(function : function, list : list);
+}
+
 /**** TODO : to translate ****
-let do_list = List.iter;;
-let assoc = List.assoc;;
-let combine = List.combine;;
-let rev = List.rev;;
 let create_string = String.create;;
 let string_length = String.length;;
 let blit_string = String.blit;;

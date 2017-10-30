@@ -1,14 +1,18 @@
-let list1 = List.Cons(1, List.Cons(2, List.Cons(3, List.Cons(4, List.Nil))));
-let list2 = List.Cons(1, List.Cons(2, List.Cons(3, List.Nil)));
-let listR = substract(list1 : list1, list2 : list2);
+let list_1 = List.Cons(1, List.Cons(2, List.Cons(3, List.Cons(4, List.Nil))));
+let list_2 = List.Cons(1, List.Cons(2, List.Cons(3, List.Nil)));
+let listR = substract(list_1 : list_1, list_2 : list_2);
 try print(hd(list : listR));
-try print(hd(list : tl(list : tl(list : list1))));
+try print(hd(list : tl(list : tl(list : list_1))));
 
 func add(integer : Int) -> Int {
   return integer + 1;
 }
 
-try print(hd(list : map(function : add, list : list1)));
+let other_name = add;
+try print(hd(list : map(function : other_name, list : list_1)));
+print(other_name(0));
+
+
 
 /**** Other exemples ****
 
