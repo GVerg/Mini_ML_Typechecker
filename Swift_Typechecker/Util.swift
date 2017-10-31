@@ -34,8 +34,8 @@ func tl<T>(list : List<T>) throws -> List<T> {
   }
 }
 
-func map<T>(function : @escaping (T) -> T, list : List<T>) -> List<T> {
-  func aux(tmp : List<T>) -> List<T> {
+func map<T1,T2>(function : @escaping (T1) -> T2, list : List<T1>) -> List<T2> {
+  func aux(tmp : List<T1>) -> List<T2> {
     switch tmp {
     case let .Cons(head, tail) :
       return List.Cons(function(head), aux(tmp : tail));
@@ -159,6 +159,34 @@ func rev<T>(list : List<T>) -> List<T> {
     }
   }
   return aux(tmp : list, acc : List.Nil);
+}
+
+func append<T>(list_1 : List<T>, list_2 : List<T>) -> List<T> {
+  func aux(tmp : List<T>) -> List<T> {
+    switch tmp {
+    case let .Cons(head, tail) :
+      return cons(element : head, list : aux(tmp : tail));
+    case .Nil :
+      return list_2;
+    }
+  }
+  return aux(tmp : list_1);
+}
+
+func concat<T>(list : List<List<T>>) -> List<T> {
+  func aux(tmp : List<List<T>>) -> List<T> {
+    switch tmp {
+    case let .Cons(head, tail) :
+      return append(list_1 : head, list_2 : aux(tmp : tail));
+    case .Nil :
+      return .Nil;
+    }
+  }
+  return aux(tmp : list);
+}
+
+func flatten<T>(list : List<List<T>>) -> List<T> {
+  return concat(list : list);
 }
 
 /**** TODO : to translate ****
