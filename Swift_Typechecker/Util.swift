@@ -21,7 +21,7 @@ func hd<T>(list : List<T>) throws -> T {
   case let .Cons(head, _) :
     return head;
   case .Nil :
-      throw(ListError.FonctionFailed(functionError : "hd"));
+      throw(ListError.FunctionFailed(functionError : "hd"));
   }
 }
 
@@ -30,7 +30,7 @@ func tl<T>(list : List<T>) throws -> List<T> {
   case let .Cons(_, tail) :
     return tail;
   case .Nil :
-    throw(ListError.FonctionFailed(functionError : "tl"));
+    throw(ListError.FunctionFailed(functionError : "tl"));
   }
 }
 
@@ -75,11 +75,11 @@ func substract<T:Comparable>(list_1 : List<T>, list_2 : List<T>) -> List<T> {
   return aux(tmp : list_1);
 }
 
-func fold_right<T1,T2>(fonction : @escaping (T1,T2) -> T2, list : List<T1>, element : T2) -> T2 {
+func fold_right<T1,T2>(function : @escaping (T1,T2) -> T2, list : List<T1>, element : T2) -> T2 {
   func aux(tmp : List<T1>) -> T2 {
     switch tmp {
     case let .Cons(head, tail) :
-      return fonction(head, aux(tmp : tail));
+      return function(head, aux(tmp : tail));
     case .Nil :
       return element;
     }
@@ -87,11 +87,11 @@ func fold_right<T1,T2>(fonction : @escaping (T1,T2) -> T2, list : List<T1>, elem
   return aux(tmp : list);
 }
 
-func fold_left<T1,T2>(fonction : @escaping (T1,T2) -> T1, element : T1, list : List<T2>) -> T1 {
+func fold_left<T1,T2>(function : @escaping (T1,T2) -> T1, element : T1, list : List<T2>) -> T1 {
   func aux(tmp : List<T2>, acc : T1) -> T1 {
     switch tmp {
     case let .Cons(head, tail) :
-       return aux(tmp : tail, acc : fonction(acc, head));
+       return aux(tmp : tail, acc : function(acc, head));
       case .Nil :
        return acc;
     }
@@ -223,7 +223,7 @@ case Illegal_character;
 }
 
 enum ListError: Error {
-case FonctionFailed(functionError : String);
+case FunctionFailed(functionError : String);
 case Invalid_Argument(functionError : String);
 case Not_Found(functionError : String);
 }

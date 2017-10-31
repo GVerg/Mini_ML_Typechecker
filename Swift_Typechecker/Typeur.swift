@@ -64,3 +64,37 @@ func free_vars_of_type(list : List<Int>, type : ml_type) -> List<Int> {
 func bound_vars_of_type(list : List<Int>, type : ml_type) -> List<Int> {
   return substract(list_1 : (vars_of_type(type : type)), list_2 : list);
 }
+
+/**** Fucking Compilation Error... HELP
+
+TO TRANSLATE :
+let flat ll = List.fold_right (@) ll [];;
+
+TRANSLATION :
+func flat<T1,T2>(list : List<T1>) -> List<T2> {
+  return fold_right(function : append, list : list, element : .Nil);
+}
+
+COMPILATION ERROR :
+cannot convert value of type (List<_>, List<_>) -> List<_> to expected argument
+type (_, List<_>) -> List<_>
+
+****/
+
+/**** BLOCKED BECAUSE OF FLAT FUNCTION
+
+TO TRANSLATE :
+let free_vars_of_type_env l =
+     flat ( List.map (function (id,Forall (v,t))
+                        -> free_vars_of_type (v,t)) l) ;;
+
+TRANSLATION :
+func free_vars_of_type_env<T>(list : List<T>) -> List<T> {
+  func tmp(element : T, q_t : quantified_type) -> List<T> {
+    let .Forall(l, t) = q_t;
+    return free_vars_of_type(list : l, type : t);
+  }
+  return flat(list : (map(function : tmp, list : list)));
+}
+
+****/
