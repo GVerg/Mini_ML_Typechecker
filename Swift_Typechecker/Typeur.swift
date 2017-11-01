@@ -1,20 +1,27 @@
-/*
-let new_unknown,reset_unknowns,max_unknown =
-  let c = ref 1
-  and max = ref 10000
-  in
-   ( (function () -> c:=!c+1; if !c >= !max then failwith "No more types";
-                     Var_type( ref(Unknown !c))),
-     (function () -> c:=1),
-     (function () -> Var_type(ref(Unknown !max))))
-;;
-*/
+var c = 1;
+var max = 10000;
+
+func new_unknown() throws -> ml_type {
+  c = c + 1;
+  if(c >= max) {
+    throw(Exception.No_More_Types);
+  } else {
+    return .Var_type(.Unknown(c));
+  }
+}
+
+func reset_unknowns() {
+  c = 1;
+}
+
+func max_unknown() -> ml_type {
+    return .Var_type(.Unknown(max));
+}
 
 indirect enum quantified_type {
 case Forall(List<Int>, ml_type);
 }
 
-// ATTENTION : List<T> changed to List<Int> because of compilation error
 func vars_of_type(type : ml_type) -> List<Int> {
   func vars(list : List<Int>, type_1 : ml_type) -> List<Int> {
     switch type_1 {
@@ -98,3 +105,42 @@ func free_vars_of_type_env<T>(list : List<T>) -> List<T> {
 }
 
 ****/
+
+
+func type_instance(q_t : quantified_type) -> ml_type {
+  switch q_t {
+  case let .Forall(list, type) :
+    func tmp(integer : Int) -> (Int, ml_type) {
+      do {
+        return (integer, try new_unknown());
+      } catch {
+        print("type_instance --> INEXPECTED ERROR");
+        return (integer, .Var_type(.Unknown(integer)));
+      }
+    }
+    let unknowns = map(function : tmp, list : list);
+    func instance(type : ml_type) -> ml_type {
+      switch type {
+      case let .Var_type(.Unknown(n)) :
+        do {
+          return try assoc(element : n, list : unknowns);
+        } catch {
+          return type;
+        }
+      case let .Var_type(.Instanciated(t)) :
+        return instance(type : t);
+      case .Const_type(_) :
+        return type;
+      case let .Pair_type(t1, t2) :
+        return .Pair_type(instance(type : t1), instance(type : t2));
+      case let .List_type(t) :
+        return .List_type(instance(type : t));
+      case let .Fun_type(t1, t2) :
+        return .Fun_type(instance(type : t1), instance(type : t2));
+      case let .Ref_type(t) :
+        return .Ref_type(instance(type : t));
+      }
+    }
+    return instance(type : type);
+  }
+}

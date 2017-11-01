@@ -12,8 +12,6 @@ let other_name = add;
 try print(hd(list : map(function : other_name, list : list_1)));
 print(other_name(0));
 
-
-
 /**** Other exemples ****
 
 let s : vartype = .Unknown(2);

@@ -220,6 +220,7 @@ case Unterminated_comment;
 case Unterminated_stringt;
 case Bad_char_constant;
 case Illegal_character;
+case No_More_Types;
 }
 
 enum ListError: Error {
