@@ -1,7 +1,26 @@
-indirect enum List<T>{
-case Cons(T, List);
-case Nil;
+// RANDOM GENERATION BETWEEN 0 AND 1
+var lastRandom = 42.0
+var m = 139968.0
+var a = 3877.0
+var c = 29573.0
+
+func random() -> Double {
+  lastRandom = ((lastRandom * a + c).truncatingRemainder(dividingBy:m))
+  return lastRandom / m
 }
+
+func create_string(integer : Int) -> String {
+  var string = "";
+  for _ in 0...integer {
+    if(random() >= 0.5) {
+      string.append("1");
+    } else {
+      string.append("0");
+    }
+  }
+  return string;
+}
+// *********************************
 
 func length<T>(list : List<T>) -> Int {
   switch list {
@@ -203,6 +222,7 @@ func do_list<T>(function : @escaping (T) -> (), list : List<T>) {
   iter(function : function, list : list);
 }
 
+
 /**** TODO : to translate ****
 let create_string = String.create;;
 let string_length = String.length;;
@@ -212,19 +232,3 @@ let sub_string = String.sub;;
 let get_lexeme_char = Lexing.lexeme_char;;
 let get_lexeme = Lexing.lexeme;;
 */
-
-indirect enum Exception : Error {
-case Error(Exception, Int, Int);
-case Unterminated_string;
-case Unterminated_comment;
-case Unterminated_stringt;
-case Bad_char_constant;
-case Illegal_character;
-case No_More_Types;
-}
-
-enum ListError: Error {
-case FunctionFailed(functionError : String);
-case Invalid_Argument(functionError : String);
-case Not_Found(functionError : String);
-}

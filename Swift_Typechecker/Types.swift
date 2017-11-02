@@ -1,3 +1,8 @@
+indirect enum List<T>{
+case Cons(T, List);
+case Nil;
+}
+
 indirect enum vartype {
 case Unknown(Int);
 case Instanciated(ml_type);
@@ -38,6 +43,7 @@ case Straint (ml_expr, ml_type);
 
 indirect enum ml_const {
 case Int(Int);
+case Float(Float);
 case Bool(Bool);
 case String(String);
 case EmptyList;
@@ -51,4 +57,13 @@ case Let(Bool, String, ml_expr);
 indirect enum ml_phrase {
 case Expr(ml_expr);
 case Decl(ml_decl);
+}
+
+enum quantified_type {
+case Forall(List<Int>, ml_type);
+}
+
+enum typing_error {
+case Unbound_var(String);
+case Clash(ml_type, ml_type);
 }
