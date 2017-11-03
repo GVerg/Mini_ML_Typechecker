@@ -11,13 +11,14 @@ func random() -> Double {
 
 func create_string(integer : Int) -> String {
   var string = "";
-  for _ in 0...integer {
+  for _ in 0..<integer {
     if(random() >= 0.5) {
       string.append("1");
     } else {
       string.append("0");
     }
   }
+  print(string);
   return string;
 }
 // *********************************

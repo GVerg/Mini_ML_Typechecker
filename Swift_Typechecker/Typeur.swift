@@ -318,63 +318,81 @@ func print_consttype(type : consttype) {
 }
 
 func ascii(integer : Int) -> String {
-  var string = create_string(integer : integer);
+  var string = create_string(integer : 1);
   string.remove(at : string.startIndex);
   string.insert(Character(UnicodeScalar(integer)!), at : string.startIndex);
   return string
 }
-/**** TODO : to translate ****
-let var_name n =
-  let rec name_of n =
-     let q,r = ((n / 26), (n mod 26))
-     in
-        if q=0 then ascii (96+r)
-        else (name_of q)^(ascii (96+r))
-   in "'"^(name_of n)
-;;
-****/
 
-
-
-
-/*func print_quantified_type(q_t : quantified_type) throws {
-  switch q_t {
-  case let .Forall(gv, t) :
-    func names_of(integer : Int, type : ml_type) {
-      switch (value) {
-      case value:
-
-      default:
-
-      }
+func var_name(integer : Int) -> String {
+  func name_of(i : Int) -> String {
+    let q = i / 26;
+    let r = i % 26;
+    if(q == 0) {
+      return "\(ascii(integer : (96+r)))";
+    } else {
+      return "\(name_of(i : q))\(ascii(integer : (96+r)))";
     }
   }
+  return "'\(name_of(i : integer))";
 }
-*/
+
+func print_quantified_type(q_t : quantified_type) throws {
+  switch q_t {
+  case let .Forall(gv, t) :
+    func names_of(integer : Int, list : List<Int>) -> List<String> {
+      switch (integer, list) {
+      case (_, .Nil) :
+        return .Nil
+      case let (_, .Cons(_, lv)) :
+        return .Cons(var_name(integer : integer), names_of(integer : integer + 1, list : lv));
+      }
+    }
+    let names = names_of(integer : 1, list : gv);
+    let var_names = try combine(list_1 : rev(list : gv), list_2 : names);
+    func print_rec(type : ml_type) throws {
+      switch type {
+      case let .Var_type(.Instanciated(t)) :
+        try print_rec(type : t);
+      case let .Var_type(.Unknown(n)) :
+        do {
+            let name = try assoc(element : n, list : var_names);
+            print(name);
+        } catch {
+          print("print_rec --> Non quantified variable in type");
+        }
+      case let .Const_type(ct) :
+        print_consttype(type : ct);
+      case let .Pair_type(t1,t2) :
+        print("(\(try print_rec(type : t1)) * \(try print_rec(type : t2)))*");
+      case let .List_type(t) :
+        print("((\(try print_rec(type : t))) list)");
+      case let .Fun_type(t1,t2) :
+        print("(\(try print_rec(type : t1)) -> \(try print_rec(type : t2)))*");
+      case let .Ref_type(t) :
+        print("((\(try print_rec(type : t))) ref)");
+      }
+    }
+    try print_rec(type : t);
+  }
+}
+
 /*
-let print_quantified_type (Forall(gv,t)) =
-  let names =
-    let rec names_of = function
-      (n,[]) -> []
-    | (n,(v1::lv)) -> (var_name n)::(names_of (n+1,lv))
-    in (names_of (1,gv))
-  in
-    let var_names = combine (rev gv) names
-    in
-      let rec print_rec = function
-         Var_type {contents=(Instanciated t)} -> print_rec t
-      |  Var_type {contents=(Unknown n)} ->
-           let name = (try assoc n var_names
-                       with Not_found -> raise (Failure "Non quantified variable in type"))
-           in print_string name
-      | Const_type ct -> print_consttype ct
-      | Pair_type(t1,t2) -> print_string "("; print_rec t1;
-                            print_string " * "; print_rec t2; print_string ")"
-      | List_type t -> print_string "(("; print_rec t; print_string ") list)"
-      | Fun_type(t1,t2)  -> print_string "("; print_rec t1;
-                            print_string " -> "; print_rec t2; print_string ")"
-      | Ref_type t -> print_string "(("; print_rec t; print_string ") ref)"
-      in
-        print_rec t
+let print_type t = print_quantified_type (Forall(free_vars_of_type ([],t),t));;
+
+
+
+let typing_handler typing_fun env expr =
+  reset_unknowns();
+  try typing_fun env expr
+  with
+    Type_error (Clash(lt1,lt2)) ->
+        print_string  "Type clash between ";print_type lt1;
+        print_string " and ";print_type lt2; print_newline();
+        failwith "type_check"
+  | Type_error (Unbound_var s)  ->
+        prerr_string "Unbound variable ";
+        prerr_endline s;
+        failwith "type_check"
 ;;
 */
