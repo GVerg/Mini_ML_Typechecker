@@ -15,20 +15,28 @@ public enum Token {
     case If
     case Then
     case Else
+    case Arrow
+    case Function
+    case EmptyList
+    case Concat
 }
 
 typealias TokenGenerator = (String) -> Token?
 let tokenList: [(String, TokenGenerator)] = [
     ("[ \t\n]", { _ in nil }),
-    ("let", { _ in Let }),
-    ("in", { _ in In }),
-    ("if", { _ in In }),
-    ("then", { _ in In }),
-    ("else", { _ in In }),
+    ("\\[\\]", { _ in .EmptyList }),
+    ("let", { _ in .Let }),
+    ("in", { _ in .In }),
+    ("if", { _ in .If }),
+    ("then", { _ in .Then }),
+    ("else", { _ in .Else }),
+    ("function", { _ in .Function }),
     ("[a-zA-Z][a-zA-Z0-9]*", {.Identifier($0) }),
     ("[0-9.]+", { (r: String) in .Number((r as NSString).floatValue) }),
     ("\\(", { _ in .ParensOpen }),
     ("\\)", { _ in .ParensClose }),
+    ("->", { _ in .Arrow }),
+    ("::", { _ in .Concat }),
     (",", { _ in .Comma }),
     ("=", { _ in .equal }),
     ("[+-/]", { .ArithOp($0) }),
