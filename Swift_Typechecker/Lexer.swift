@@ -19,12 +19,14 @@ public enum Token {
     case Function
     case EmptyList
     case Concat
+    case Unit
 }
 
 typealias TokenGenerator = (String) -> Token?
 let tokenList: [(String, TokenGenerator)] = [
     ("[ \t\n]", { _ in nil }),
     ("\\[\\]", { _ in .EmptyList }),
+    ("\\(\\)", { _ in .Unit }),
     ("let", { _ in .Let }),
     ("in", { _ in .In }),
     ("if", { _ in .If }),
