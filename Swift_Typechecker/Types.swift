@@ -62,8 +62,3 @@ case Decl(ml_decl);
 enum quantified_type {
 case Forall(List<Int>, ml_type);
 }
-
-enum typing_error {
-case Unbound_var(String);
-case Clash(ml_type, ml_type);
-}

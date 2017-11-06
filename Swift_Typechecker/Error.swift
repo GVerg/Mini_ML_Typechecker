@@ -7,6 +7,12 @@ case Bad_char_constant;
 case Illegal_character;
 case No_More_Types;
 case Type_error(typing_error);
+case Failwith(String);
+}
+
+enum typing_error {
+case Unbound_var(String);
+case Clash(ml_type, ml_type);
 }
 
 enum ListError: Error {

@@ -66,40 +66,19 @@ func bound_vars_of_type(list : List<Int>, type : ml_type) -> List<Int> {
   return substract(list_1 : (vars_of_type(type : type)), list_2 : list);
 }
 
-/**** Fucking Compilation Error... HELP
-
-TO TRANSLATE :
-let flat ll = List.fold_right (@) ll [];;
-
-TRANSLATION :
-func flat<T1,T2>(list : List<T1>) -> List<T2> {
+func flat(list : List<List<Int>>) -> List<Int> {
   return fold_right(function : append, list : list, element : .Nil);
 }
 
-COMPILATION ERROR :
-cannot convert value of type (List<_>, List<_>) -> List<_> to expected argument
-type (_, List<_>) -> List<_>
-
-****/
-
-/**** BLOCKED BECAUSE OF FLAT FUNCTION
-
-TO TRANSLATE :
-let free_vars_of_type_env l =
-     flat ( List.map (function (id,Forall (v,t))
-                        -> free_vars_of_type (v,t)) l) ;;
-
-TRANSLATION :
-func free_vars_of_type_env<T>(list : List<T>) -> List<T> {
-  func tmp(element : T, q_t : quantified_type) -> List<T> {
-    let .Forall(l, t) = q_t;
-    return free_vars_of_type(list : l, type : t);
+func free_vars_of_type_env<T>(list : List<(T,quantified_type)>) -> List<Int> {
+  func tmp(element : T, q_t : quantified_type) -> List<Int> {
+    switch q_t {
+    case let .Forall(l,t) :
+      return free_vars_of_type(list : l, type : t);
+    }
   }
   return flat(list : (map(function : tmp, list : list)));
 }
-
-****/
-
 
 func type_instance(q_t : quantified_type) -> ml_type {
   switch q_t {
@@ -226,62 +205,90 @@ func type_const(type : ml_const) throws -> ml_type {
   }
 }
 
+func generalize_types<T1,T2>(gamma : List<(T1,quantified_type)>, list : List<(T2,ml_type)>) -> List<(T2,quantified_type)> {
+  let fvg = free_vars_of_type_env(list : gamma);
+  return map(function : {(s : T2, t : ml_type) -> (T2, quantified_type) in (s, .Forall(free_vars_of_type(list : fvg, type : t), t))}, list : list);
+}
+
+func type_expr(gamma : List<(String,quantified_type)>, expression : ml_expr) throws -> ml_type {
+  func type_rec(expr : ml_expr) throws -> ml_type {
+    switch expr {
+    case let .Const(c) :
+      return try type_const(type : c);
+    case let .Var(s) :
+      do {
+        let t = try assoc(element : s, list : gamma);
+        return type_instance(q_t : t);
+      } catch {
+        throw(Exception.Type_error(.Unbound_var(s)));
+      }
+    case let .Unop(s,e) :
+      do {
+        let t = try assoc(element : s, list : gamma);
+        let t1 = type_instance(q_t : t);
+        let t2 = try type_rec(expr : e);
+        let u = try new_unknown();
+        try unify_types(type_1 : t1, type_2 : .Fun_type(t2,u));
+        return u;
+      } catch {
+        throw(Exception.Type_error(.Unbound_var(s)));
+      }
+    case let .Binop(s,e1,e2) :
+      do {
+        let t = try assoc(element : s, list : gamma);
+        let t0 = type_instance(q_t : t);
+        let t1 = try type_rec(expr : e1);
+        let t2 = try type_rec(expr : e2);
+        let u = try new_unknown();
+        let _ = try new_unknown(); // v is never used
+        try unify_types(type_1 : t0, type_2 : .Fun_type(.Pair_type(t1,t2),u));
+        return u;
+      } catch {
+        throw(Exception.Type_error(.Unbound_var(s)));
+      }
+    case let .Pair(e1,e2) :
+      return .Pair_type(try type_rec(expr : e1), try type_rec(expr : e2));
+    case let .Cons(e1,e2) :
+      let t1 = try type_rec(expr : e1);
+      let t2 = try type_rec(expr : e2);
+      try unify_types(type_1 : .List_type(t1), type_2 : t2);
+      return t2;
+    case let .Cond(e1,e2,e3) :
+      try unify_types(type_1 : .Const_type(.Bool_type), type_2 : try type_rec(expr : e1));
+      let t2 = try type_rec(expr : e2);
+      let t3 = try type_rec(expr : e3);
+      try unify_types(type_1 : t2, type_2 : t3);
+      return t2;
+    case let .App(e1,e2) :
+      let t1 = try type_rec(expr : e1);
+      let t2 = try type_rec(expr : e2);
+      let u = try new_unknown();
+      try unify_types(type_1 : t1, type_2 : .Fun_type(t2,u));
+      return u;
+    case let .Abs(s,e) :
+      let t = try new_unknown();
+      let new_env = List.Cons((s, .Forall(.Nil, t)), gamma);
+      return .Fun_type(t, try type_expr(gamma : new_env, expression : e));
+    case let .Letin(false,s,e1,e2) :
+      let t1 = try type_rec(expr : e1);
+      let new_env = generalize_types(gamma : gamma, list : .Cons((s,t1), .Nil));
+      return try type_expr(gamma : append(list_1 : new_env, list_2 : gamma), expression : e2);
+    case let .Letin(true,s,e1,e2) :
+      let u = try new_unknown();
+      let new_env = List.Cons((s, .Forall(.Nil,u)), gamma);
+      let t1 = try type_expr(gamma : append(list_1 : new_env, list_2 : gamma), expression : e1);
+      let final_env = generalize_types(gamma : gamma, list : .Cons((s,t1), .Nil));
+      return try type_expr(gamma : append(list_1 : final_env, list_2 : gamma), expression : e2);
+    case .Ref(_) :
+      throw(Exception.Failwith("not implemented yet"));
+    case .Straint(_) :
+      throw(Exception.Failwith("not implemented yet"));
+    }
+  }
+  return try type_rec(expr : expression);
+}
+
 /**** BLOCKED BECAUSE OF FLAT FUNCTION
-
-let generalize_types gamma l =
-   let fvg = free_vars_of_type_env gamma
-   in
-     List.map (function (s,t) ->
-                (s, Forall(free_vars_of_type (fvg,t),t))) l
- ;;
-
- let rec type_expr gamma =
-    let rec type_rec expri =
-      match expri with
-          Const c -> type_const c
-        | Var s -> let t = try List.assoc s gamma
-           with Not_found -> raise (Type_error(Unbound_var s))
-           in  type_instance t
-        | Unop (s,e) ->
-            let t = try assoc s gamma
-                    with Not_found -> raise (Type_error(Unbound_var s))
-             in
-               let t1= type_instance t
-               and t2 = type_rec e in
-               let u = new_unknown()
-               in
-                 unify_types(t1, Fun_type(t2,u)); u
-        | Binop(s,e1,e2) ->
-           let t = try assoc s gamma
-                   with Not_found -> raise (Type_error(Unbound_var s))
-           in
-             let t0 = type_instance t
-             and t1 = type_rec e1
-             and t2 = type_rec e2
-             in
-               let u = new_unknown()
-               and v = new_unknown()
-               in
-                 unify_types(t0, Fun_type(Pair_type (t1,t2),u)); u
-
-
-
-
-        | Pair (e1,e2) -> Pair_type (type_rec e1, type_rec e2)
-        | Cons (e1,e2) ->
-            let t1 = type_rec e1
-            and t2 = type_rec e2 in
-              unify_types (List_type t1, t2); t2
-        | Cond (e1,e2,e3) ->
-            let t1 = unify_types (Const_type Bool_type, type_rec e1)
-            and t2 = type_rec e2
-            and t3 = type_rec e3 in
-              unify_types (t2,t3); t2
-        | App (e1,e2) ->
-            let t1 = type_rec e1
-            and t2 = type_rec e2 in
-              let u = new_unknown() in
-                unify_types (t1, Fun_type (t2,u)); u
         | Abs(s,e) ->
             let t = new_unknown() in
               let new_env = (s,Forall ([],t))::gamma in
@@ -377,10 +384,13 @@ func print_quantified_type(q_t : quantified_type) throws {
   }
 }
 
+func print_type(type : ml_type) throws {
+  try print_quantified_type(q_t : .Forall(free_vars_of_type(list : .Nil, type : type), type));
+}
+
+
+
 /*
-let print_type t = print_quantified_type (Forall(free_vars_of_type ([],t),t));;
-
-
 
 let typing_handler typing_fun env expr =
   reset_unknowns();
