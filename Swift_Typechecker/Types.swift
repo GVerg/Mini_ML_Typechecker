@@ -3,7 +3,7 @@ case Cons(T, List);
 case Nil;
 }
 
-indirect enum vartype {
+enum vartype {
 case Unknown(Int);
 case Instanciated(ml_type);
 }

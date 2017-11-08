@@ -288,27 +288,6 @@ func type_expr(gamma : List<(String,quantified_type)>, expression : ml_expr) thr
   return try type_rec(expr : expression);
 }
 
-/**** BLOCKED BECAUSE OF FLAT FUNCTION
-        | Abs(s,e) ->
-            let t = new_unknown() in
-              let new_env = (s,Forall ([],t))::gamma in
-                Fun_type (t, type_expr new_env e)
-        | Letin (false,s,e1,e2) ->
-            let t1 = type_rec e1 in
-              let new_env = generalize_types gamma [ (s,t1) ] in
-                type_expr (new_env@gamma) e2
-        | Letin (true,s,e1,e2) ->
-            let u = new_unknown () in
-              let new_env = (s,Forall([  ],u))::gamma in
-                let t1 = type_expr (new_env@gamma) e1 in
-                  let final_env = generalize_types gamma [ (s,t1) ] in
-                    type_expr (final_env@gamma) e2
-        | Ref e -> failwith "not yet implemented"
-    in
-      type_rec;;
-
- ****/
-
 func print_consttype(type : consttype) {
   switch type {
   case .Int_type :
@@ -388,7 +367,10 @@ func print_type(type : ml_type) throws {
   try print_quantified_type(q_t : .Forall(free_vars_of_type(list : .Nil, type : type), type));
 }
 
-
+func typing_handler<T1,T2,T3>(typing_fun : (T1,T2) throws -> T3, env : T1, expr : T2) throws -> T3 {
+  reset_unknowns();
+  return try typing_fun(env, expr);
+}
 
 /*
 
