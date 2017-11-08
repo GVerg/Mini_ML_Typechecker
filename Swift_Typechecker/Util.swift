@@ -23,6 +23,20 @@ func create_string(integer : Int) -> String {
 }
 // *********************************
 
+func fst<T1,T2>(pair : (T1,T2)) -> T1 {
+  switch pair {
+  case let (t1, _) :
+      return t1;
+  }
+}
+
+func snd<T1,T2>(pair : (T1,T2)) -> T2 {
+  switch pair {
+  case let (_, t2) :
+      return t2;
+  }
+}
+
 func length<T>(list : List<T>) -> Int {
   switch list {
   case let .Cons(_, tail) :

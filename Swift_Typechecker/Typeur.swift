@@ -367,24 +367,7 @@ func print_type(type : ml_type) throws {
   try print_quantified_type(q_t : .Forall(free_vars_of_type(list : .Nil, type : type), type));
 }
 
-func typing_handler<T1,T2,T3>(typing_fun : (T1,T2) throws -> T3, env : T1, expr : T2) throws -> T3 {
+func typing_handler<T1,T2,T3>(typing_fun : @escaping (T1,T2) throws -> T3, env : T1, expr : T2) throws -> T3 {
   reset_unknowns();
   return try typing_fun(env, expr);
 }
-
-/*
-
-let typing_handler typing_fun env expr =
-  reset_unknowns();
-  try typing_fun env expr
-  with
-    Type_error (Clash(lt1,lt2)) ->
-        print_string  "Type clash between ";print_type lt1;
-        print_string " and ";print_type lt2; print_newline();
-        failwith "type_check"
-  | Type_error (Unbound_var s)  ->
-        prerr_string "Unbound variable ";
-        prerr_endline s;
-        failwith "type_check"
-;;
-*/
