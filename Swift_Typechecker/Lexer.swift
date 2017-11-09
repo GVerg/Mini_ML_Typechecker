@@ -1,10 +1,12 @@
 import Foundation
 
 public enum Token {
-    case Let
+    case OLet
+    case OLetin
     case In
     case Identifier(String)
-    case Number(Float)
+    case Integer(Int)//TODO : to check
+    case ODouble(Float)
     case ParensOpen
     case ParensClose
     case Comma
@@ -12,36 +14,40 @@ public enum Token {
     case Equal
     case ArithOp(String)
     case Semicolon
+    case DoubleSemicolon
     case If
     case Then
     case Else
     case Arrow
     case Function
-    case EmptyList
+    case OEmptyList
     case Concat
-    case Unit
+    case OUnit
 }
 
 typealias TokenGenerator = (String) -> Token?
 let tokenList: [(String, TokenGenerator)] = [
     ("[ \t\n]", { _ in nil }),
-    ("\\[\\]", { _ in .EmptyList }),
-    ("\\(\\)", { _ in .Unit }),
-    ("let", { _ in .Let }),
+    ("\\[\\]", { _ in .OEmptyList }),
+    ("\\(\\)", { _ in .OUnit }),
+    ("let", { _ in .OLet }),
+    ("_let", { _ in .OLetin }),
     ("in", { _ in .In }),
     ("if", { _ in .If }),
     ("then", { _ in .Then }),
     ("else", { _ in .Else }),
     ("function", { _ in .Function }),
     ("[a-zA-Z][a-zA-Z0-9]*", {.Identifier($0) }),
-    ("[0-9.]+", { (r: String) in .Number((r as NSString).floatValue) }),
+    ("[0-9]+\\.[0-9]*", { (r: String) in .ODouble((r as NSString).floatValue) }),
+    ("[0-9]+", { (r: String) in .Integer(Int(r) }),//TODO : to check
     ("\\(", { _ in .ParensOpen }),
     ("\\)", { _ in .ParensClose }),
     ("->", { _ in .Arrow }),
     ("::", { _ in .Concat }),
     (",", { _ in .Comma }),
-    ("=", { _ in .equal }),
+    ("=", { _ in .Equal }),
     ("[+-/]", { .ArithOp($0) }),
+    (";;", { _ in .DoubleSemicolon }),
     (";", { _ in .Semicolon }),
 
 ]
@@ -59,21 +65,21 @@ public class Lexer {
             var matched = false
 
             for (pattern, generator) in tokenList {
-                if let m = content.match(pattern) {
+                if let m = content.match(regex: pattern) {
                     if let t = generator(m) {
                         tokens.append(t)
                     }
 
-                    content = content.substringFromIndex(content.startIndex.advancedBy(m.characters.count))
+                    content=content.substring(from: content.index(content.startIndex, offsetBy:m.characters.count))
                     matched = true
                     break
                 }
             }
 
             if !matched {
-                let index = content.startIndex.advancedBy(1)
-                tokens.append(.Other(content.substringToIndex(index)))
-                content = content.substringFromIndex(index)
+                let index = content.index(content.startIndex,offsetBy: 1)
+                tokens.append(.Other(content.substring(to: index)))
+                content = content.substring(from:index)
             }
         }
         return tokens
