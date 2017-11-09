@@ -1,52 +1,19 @@
-let list_1 = List.Cons(1, List.Cons(2, List.Cons(3, List.Cons(4, List.Nil))));
-let list_2 = List.Cons(1, List.Cons(2, List.Cons(3, List.Nil)));
-let listR = substract(list_1 : list_1, list_2 : list_2);
-try print(hd(list : listR));
-try print(hd(list : tl(list : tl(list : list_1))));
+let p1 = "_let x = _let y = 2 in y in x;;"
+let p2 = "_let x = 5 in x;;"
+let p3 = "_let y = function x -> x in y;;"
+let p4 = "_let a = 5 in _let y = function x -> x in y a;;" //l'inferance de type ne marche pas
+let p5 = "_let a = (5., 3) in a;;"
+let p6 = "_let a = (function x -> x, function y -> y) in a;;"
+let p7 = "_let a = if true then 5 else 9 in a;;"
 
-func add(integer : Int) -> Int {
-  return integer + 1;
+let l = Lexer(input: p6); // changez l'exemple ici
+
+let ast = parse(tokens: l.tokenize())
+
+print("Affichage de l'ast : \n \(ast)")
+
+print("-----------------------")
+if case .Expr(let x) = ast {
+   type_check(expr : x)
 }
 
-let other_name = add;
-try print(hd(list : map(function : other_name, list : list_1)));
-print(other_name(0));
-
-/**** Other exemples ****
-
-let s : vartype = .Unknown(2);
-
-func f(a:vartype) -> Int {
-  switch a {
-  case .Unknown(let x) :
-    return x
-  case _ :
-    return 0
-  }
-}
-
-print(f(a:s));
-
-let s2 : ml_const = .Bool(true);
-let s3 : ml_expr = .Const(s2);
-
-func f(a:ml_const) -> Bool {
-  switch a {
-  case .Bool(let x) :
-    return x
-  case _ :
-    return false
-  }
-}
-
-func f(a:ml_expr) -> Bool {
-    switch a {
-    case .Const(let x) :
-      return f(a:x);
-    case _ :
-      return false;
-    }
-}
-
-print(f(a:s3));
-*/

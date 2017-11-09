@@ -9,7 +9,7 @@ public enum Token {
     case OLetin
     case In
     case Identifier(String)
-    case Integer(Int)//TODO : to check
+    case OInteger(Int)//TODO : to check
     case ODouble(Float)
     case ParensOpen
     case ParensClose
@@ -43,7 +43,7 @@ let tokenList: [(String, TokenGenerator)] = [
     ("function", { _ in .Function }),
     ("[a-zA-Z][a-zA-Z0-9]*", {.Identifier($0) }),
     ("[0-9]+\\.[0-9]*", { (r: String) in .ODouble((r as NSString).floatValue) }),
-    ("[0-9]+", { (r: String) in .Integer(Int(r) }),//TODO : to check
+    ("[0-9]+", { (r: String) in .OInteger(Int((r as NSString).intValue))}),//TODO : to check
     ("\\(", { _ in .ParensOpen }),
     ("\\)", { _ in .ParensClose }),
     ("->", { _ in .Arrow }),
