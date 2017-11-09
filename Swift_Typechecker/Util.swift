@@ -18,7 +18,7 @@ func create_string(integer : Int) -> String {
       string.append("0");
     }
   }
-  print(string);
+  print(string, terminator : "");
   return string;
 }
 // *********************************
@@ -36,6 +36,8 @@ func snd<T1,T2>(pair : (T1,T2)) -> T2 {
       return t2;
   }
 }
+
+// *********************************
 
 func length<T>(list : List<T>) -> Int {
   switch list {

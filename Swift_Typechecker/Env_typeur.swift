@@ -29,8 +29,20 @@ func add_initial_typing_env(name : String, q_t : quantified_type) {
   initial_typing_env = .Cons((name, q_t), initial_typing_env);
 }
 
+func type_check(expr : ml_expr) {
+    do {
+      let t = try typing_handler(typing_fun : type_expr, env : initial_typing_env, expr : expr);
+      print(t)
+      let qt = snd(pair : try hd(list : generalize_types(gamma : initial_typing_env, list : .Cons(("it", t), .Nil))));
+      print("it : ", terminator : "");
+      try print_quantified_type(q_t : qt);
+      print();
+    } catch {
+      print("type_check --> ERROR UNEXPECTED")
+    }
+}
 
-func type_check(expr : ml_expr) -> (ml_type, quantified_type) {
+/*func type_check(expr : ml_expr) -> (ml_type, quantified_type) {
   do {
     let et = try typing_handler(typing_fun : type_expr, env : initial_typing_env, expr : expr);
     let t = et;
@@ -40,17 +52,4 @@ func type_check(expr : ml_expr) -> (ml_type, quantified_type) {
     print("type_check --> ERROR UNEXPECTED")
     return (ml_type.Var_type(.Unknown(0)), .Forall(.Cons(0, .Nil), ml_type.Var_type(.Unknown(0))))
   }
-}
-
-/*
-
-
-let type_check e =
-  let et = typing_handler type_expr !initial_typing_env e
-  in
-    let t =  et in
-    let qt = snd(List.hd(generalize_types !initial_typing_env ["_zztop",t]))
-    in
-      et,qt
-;;
-*/
+}*/

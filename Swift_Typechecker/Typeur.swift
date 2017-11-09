@@ -143,48 +143,48 @@ func shorten(type : ml_type) -> ml_type {
   }
 }
 
-func unify_types(type_1 : ml_type, type_2 : ml_type) throws {
-  let lt1 = shorten(type : type_1);
-  let lt2 = shorten(type : type_2);
-  switch (lt1, lt2) {
-  case (.Var_type(var occn), .Var_type(.Unknown(let m))) :
+func unify_types(type_1 : inout ml_type, type_2 : inout ml_type) throws {
+  type_1 = shorten(type : type_1);
+  type_2 = shorten(type : type_2);
+  switch (type_1, type_2) {
+  case (.Var_type(let occn), .Var_type(.Unknown(let m))) :
     switch occn {
     case let .Unknown(n) :
       if(n != m) {
-        occn = .Instanciated(lt2);
+        type_1 = .Var_type(.Instanciated(type_2));
       }
     case _ :
       print("unify_types --> SHOULD NOT BE THERE");
     }
-  case (.Var_type(var occn), _) :
+  case (.Var_type(let occn), _) :
     switch occn {
     case let .Unknown(n) :
-      if(occurs(element : n, type : lt2)) {
-        throw(Exception.Type_error(.Clash(lt1, lt2)));
+      if(occurs(element : n, type : type_2)) {
+        throw(Exception.Type_error(.Clash(type_1, type_2)));
       } else {
-        occn = .Instanciated(lt2);
+        type_1 = .Var_type(.Instanciated(type_2))
       }
     case _ :
       print("unify_types --> SHOULD NOT BE THERE");
     }
   case (_, .Var_type(.Unknown(_))) :
-    try unify_types(type_1 : lt2, type_2 : lt1);
+    try unify_types(type_1 : &type_2, type_2 : &type_1);
   case let (.Const_type(ct1), .Const_type(ct2)) :
     if(ct1 != ct2) {
-      throw(Exception.Type_error(.Clash(lt1, lt2)));
+      throw(Exception.Type_error(.Clash(type_1, type_2)));
     }
-  case let (.Pair_type(t1, t2), .Pair_type(t3, t4)) :
-    try unify_types(type_1 : t1, type_2 : t3);
-    try unify_types(type_1 : t2, type_2 : t4);
-  case let (.List_type(t1), .List_type(t2)) :
-    try unify_types(type_1 : t1, type_2 : t2);
-  case let (.Fun_type(t1, t2), .Fun_type(t3, t4)) :
-    try unify_types(type_1 : t1, type_2 : t3);
-    try unify_types(type_1 : t2, type_2 : t4);
+  case var (.Pair_type(t1, t2), .Pair_type(t3, t4)) :
+    try unify_types(type_1 : &t1, type_2 : &t3);
+    try unify_types(type_1 : &t2, type_2 : &t4);
+  case var (.List_type(t1), .List_type(t2)) :
+    try unify_types(type_1 : &t1, type_2 : &t2);
+  case var (.Fun_type(t1, t2), .Fun_type(t3, t4)) :
+    try unify_types(type_1 : &t1, type_2 : &t3);
+    try unify_types(type_1 : &t2, type_2 : &t4);
   case (.Ref_type(_), .Ref_type(_)) :
     print("No unification for ref type");
   case _ :
-    throw(Exception.Type_error(.Clash(lt1, lt2)));
+    throw(Exception.Type_error(.Clash(type_1, type_2)));
   }
 }
 
@@ -225,10 +225,11 @@ func type_expr(gamma : List<(String,quantified_type)>, expression : ml_expr) thr
     case let .Unop(s,e) :
       do {
         let t = try assoc(element : s, list : gamma);
-        let t1 = type_instance(q_t : t);
+        var t1 = type_instance(q_t : t);
         let t2 = try type_rec(expr : e);
         let u = try new_unknown();
-        try unify_types(type_1 : t1, type_2 : .Fun_type(t2,u));
+        var tmp = ml_type.Fun_type(t2,u);
+        try unify_types(type_1 : &t1, type_2 : &tmp);
         return u;
       } catch {
         throw(Exception.Type_error(.Unbound_var(s)));
@@ -236,12 +237,13 @@ func type_expr(gamma : List<(String,quantified_type)>, expression : ml_expr) thr
     case let .Binop(s,e1,e2) :
       do {
         let t = try assoc(element : s, list : gamma);
-        let t0 = type_instance(q_t : t);
+        var t0 = type_instance(q_t : t);
         let t1 = try type_rec(expr : e1);
         let t2 = try type_rec(expr : e2);
         let u = try new_unknown();
         let _ = try new_unknown(); // v is never used
-        try unify_types(type_1 : t0, type_2 : .Fun_type(.Pair_type(t1,t2),u));
+        var tmp = ml_type.Fun_type(.Pair_type(t1,t2),u)
+        try unify_types(type_1 : &t0, type_2 : &tmp);
         return u;
       } catch {
         throw(Exception.Type_error(.Unbound_var(s)));
@@ -250,20 +252,24 @@ func type_expr(gamma : List<(String,quantified_type)>, expression : ml_expr) thr
       return .Pair_type(try type_rec(expr : e1), try type_rec(expr : e2));
     case let .Cons(e1,e2) :
       let t1 = try type_rec(expr : e1);
-      let t2 = try type_rec(expr : e2);
-      try unify_types(type_1 : .List_type(t1), type_2 : t2);
+      var t2 = try type_rec(expr : e2);
+      var tmp = ml_type.List_type(t1);
+      try unify_types(type_1 : &tmp, type_2 : &t2);
       return t2;
     case let .Cond(e1,e2,e3) :
-      try unify_types(type_1 : .Const_type(.Bool_type), type_2 : try type_rec(expr : e1));
-      let t2 = try type_rec(expr : e2);
-      let t3 = try type_rec(expr : e3);
-      try unify_types(type_1 : t2, type_2 : t3);
+      var tmp1 = ml_type.Const_type(.Bool_type)
+      var tmp2 = try type_rec(expr : e1)
+      try unify_types(type_1 : &tmp1, type_2 : &tmp2);
+      var t2 = try type_rec(expr : e2);
+      var t3 = try type_rec(expr : e3);
+      try unify_types(type_1 : &t2, type_2 : &t3);
       return t2;
     case let .App(e1,e2) :
-      let t1 = try type_rec(expr : e1);
+      var t1 = try type_rec(expr : e1);
       let t2 = try type_rec(expr : e2);
       let u = try new_unknown();
-      try unify_types(type_1 : t1, type_2 : .Fun_type(t2,u));
+      var tmp = ml_type.Fun_type(t2,u);
+      try unify_types(type_1 : &t1, type_2 : &tmp);
       return u;
     case let .Abs(s,e) :
       let t = try new_unknown();
@@ -291,15 +297,15 @@ func type_expr(gamma : List<(String,quantified_type)>, expression : ml_expr) thr
 func print_consttype(type : consttype) {
   switch type {
   case .Int_type :
-    print("int");
+    print("int", terminator : "");
   case .Float_type :
-    print("float");
+    print("float", terminator : "");
   case .String_type :
-    print("string");
+    print("string", terminator : "");
   case .Bool_type :
-    print("bool");
+    print("bool", terminator : "");
   case .Unit_type :
-    print("unit");
+    print("unit", terminator : "");
   }
 }
 
@@ -315,7 +321,8 @@ func var_name(integer : Int) -> String {
     let q = i / 26;
     let r = i % 26;
     if(q == 0) {
-      return "\(ascii(integer : (96+r)))";
+      let s = ascii(integer : (96+r))
+      return s;
     } else {
       return "\(name_of(i : q))\(ascii(integer : (96+r)))";
     }
@@ -323,18 +330,46 @@ func var_name(integer : Int) -> String {
   return "'\(name_of(i : integer))";
 }
 
+/*
+let print_quantified_type (Forall(gv,t)) =
+  let names =
+    let rec names_of = function
+      (n,[]) -> []
+    | (n,(v1::lv)) -> (var_name n)::(names_of (n+1,lv))
+    in (names_of (1,gv))
+  in
+    let var_names = combine (rev gv) names
+    in
+      let rec print_rec = function
+         Var_type {contents=(Instanciated t)} -> print_rec t
+      |  Var_type {contents=(Unknown n)} ->
+           let name = (try assoc n var_names
+                       with Not_found -> raise (Failure "Non quantified variable in type"))
+           in print_string name
+      | Const_type ct -> print_consttype ct
+      | Pair_type(t1,t2) -> print_string "("; print_rec t1;
+                            print_string " * "; print_rec t2; print_string ")"
+      | List_type t -> print_string "(("; print_rec t; print_string ") list)"
+      | Fun_type(t1,t2)  -> print_string "("; print_rec t1;
+                            print_string " -> "; print_rec t2; print_string ")"
+      | Ref_type t -> print_string "(("; print_rec t; print_string ") ref)"
+      in
+        print_rec t
+;;
+*/
+
 func print_quantified_type(q_t : quantified_type) throws {
   switch q_t {
   case let .Forall(gv, t) :
-    func names_of(integer : Int, list : List<Int>) -> List<String> {
-      switch (integer, list) {
+    func names_of(pair : (Int, List<Int>)) -> List<String> {
+      switch pair {
       case (_, .Nil) :
         return .Nil
-      case let (_, .Cons(_, lv)) :
-        return .Cons(var_name(integer : integer), names_of(integer : integer + 1, list : lv));
+      case let (integer, .Cons(_, lv)) :
+        return .Cons(var_name(integer : integer), names_of(pair : (integer + 1, lv)));
       }
     }
-    let names = names_of(integer : 1, list : gv);
+    let names = names_of(pair : (1, gv));
     let var_names = try combine(list_1 : rev(list : gv), list_2 : names);
     func print_rec(type : ml_type) throws {
       switch type {
@@ -343,20 +378,32 @@ func print_quantified_type(q_t : quantified_type) throws {
       case let .Var_type(.Unknown(n)) :
         do {
             let name = try assoc(element : n, list : var_names);
-            print(name);
+            print(name, terminator : "");
         } catch {
           print("print_rec --> Non quantified variable in type");
         }
       case let .Const_type(ct) :
         print_consttype(type : ct);
       case let .Pair_type(t1,t2) :
-        print("(\(try print_rec(type : t1)) * \(try print_rec(type : t2)))*");
+        print("(", terminator : "");
+        try print_rec(type : t1)
+        print(" * ", terminator : "")
+        try print_rec(type : t2)
+        print(")", terminator : "")
       case let .List_type(t) :
-        print("((\(try print_rec(type : t))) list)");
+        print("((", terminator : "");
+        try print_rec(type : t)
+        print(") list)", terminator : "")
       case let .Fun_type(t1,t2) :
-        print("(\(try print_rec(type : t1)) -> \(try print_rec(type : t2)))*");
+        print("(", terminator : "");
+        try print_rec(type : t1)
+        print(") -> ", terminator : "")
+        try print_rec(type : t2)
+        print(")", terminator : "")
       case let .Ref_type(t) :
-        print("((\(try print_rec(type : t))) ref)");
+        print("((", terminator : "");
+        try print_rec(type : t)
+        print(") ref)", terminator : "")
       }
     }
     try print_rec(type : t);
