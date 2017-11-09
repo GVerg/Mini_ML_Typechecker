@@ -32,9 +32,9 @@ func add_initial_typing_env(name : String, q_t : quantified_type) {
 func type_check(expr : ml_expr) {
     do {
       let t = try typing_handler(typing_fun : type_expr, env : initial_typing_env, expr : expr);
-      print(t)
+      //print(t)
       let qt = snd(pair : try hd(list : generalize_types(gamma : initial_typing_env, list : .Cons(("it", t), .Nil))));
-      print("it : ", terminator : "");
+      print("Type : ", terminator : "");
       try print_quantified_type(q_t : qt);
       print();
     } catch {

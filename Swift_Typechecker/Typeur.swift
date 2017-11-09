@@ -397,7 +397,7 @@ func print_quantified_type(q_t : quantified_type) throws {
       case let .Fun_type(t1,t2) :
         print("(", terminator : "");
         try print_rec(type : t1)
-        print(") -> ", terminator : "")
+        print(" -> ", terminator : "")
         try print_rec(type : t2)
         print(")", terminator : "")
       case let .Ref_type(t) :

@@ -18,7 +18,7 @@ func create_string(integer : Int) -> String {
       string.append("0");
     }
   }
-  print(string, terminator : "");
+  //print(string, terminator : "");
   return string;
 }
 // *********************************
